@@ -9,12 +9,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-!u_ro=q(b4(4-nx6ln&6ssy4!q26*cxh26fkj=1+hq-ep%gx7*'
+with open(os.path.join(BASE_DIR,'SECRET_KEY.txt')) as f:
+    SECRET_KEY=f.read().strip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['shahenati.ly']
+ALLOWED_HOSTS = ['shahenati.ly','www.shahenati.ly']
 
 
 # Application definition
@@ -108,6 +109,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
 

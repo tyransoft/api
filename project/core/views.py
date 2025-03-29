@@ -6,6 +6,9 @@ from decimal import Decimal ,InvalidOperation
 from django.db.models import Avg,Count
 from django.db import transaction
 
+@api_view(['GET'])
+def home(request):
+   return Response({'message':'اهلا بك في شاحنتي.......!',})
 
 
 

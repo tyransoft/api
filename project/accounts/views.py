@@ -63,21 +63,13 @@ def register_driver(request):
 
    if user is not None:
          login(request, user)
-         response= Response({
+         return Response({
                'message': 'مرحبا بك. تم تسجيلك بنجاح',
                'csrftoken':get_token(request),
               
             },status=200)
          
-         response.set_cookie(
-             'csrftoken',
-             get_token(request),
-             httponly=True,
-             samesite='lax',
-             max_age=60 * 60 * 24 * 7,  
-             secure=True
-         )
-         return response
+   
    else:
          return Response({'error': 'فشلت عملية التسجيل، حاول مرة أخرى.'}, status=500)
 
@@ -128,21 +120,13 @@ def register_customer(request):
   
    if user is not None:
          login(request, user)
-         response= Response({
+         return Response({
                'message': 'مرحبا بك. تم تسجيلك بنجاح',
                'csrftoken':get_token(request),
               
             },status=200)
          
-         response.set_cookie(
-             'csrftoken',
-             get_token(request),
-             httponly=True,
-             samesite='lax',
-             max_age=60 * 60 * 24 * 7,  
-             secure=True
-         )
-         return response
+ 
    else:
          return Response({'error': 'فشلت عملية التسجيل، حاول مرة أخرى.'}, status=500)
 
@@ -163,21 +147,13 @@ def login_user(request):
 
    if user is not None:
       login(request, user)
-      response= Response({
+      return Response({
                'message': 'مرحبا بك. تم تسجيلك بنجاح',
                'csrftoken':get_token(request),
               
             },status=200)
          
-      response.set_cookie(
-             'csrftoken',
-             get_token(request),
-             httponly=True,
-             samesite='lax',
-             max_age=60 * 60 * 24 * 7,  
-             secure=True
-         )
-      return response
+
    return Response({'error': 'اسم المستخدم وكلمة المرور غير صحيحين. حاول مرة أخرى أو يمكنك إنشاء حساب جديد.'}, status=401)
 
 

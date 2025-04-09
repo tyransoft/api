@@ -112,12 +112,7 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
-CORS_ALLOW_ALL_ORIGINS = False 
-CORS_ALLOWED_ORIGINS = [
-    "https://shahenati.ly",   
-    "https://www.shahenati.ly",
-    
-]
+
 
 
 
@@ -126,11 +121,7 @@ SESSION_COOKIE_SECURE = True
 
 CSRF_COOKIE_SECURE = True 
 CSRF_COOKIE_SAMESITE = 'Lax'  
-CSRF_TRUSTED_ORIGINS = [
-    "https://shahenati.ly",
-    "https://www.shahenati.ly",
 
-]
 
 
 

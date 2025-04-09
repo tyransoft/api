@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
+    'corsheaders',
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
@@ -33,6 +34,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -112,8 +114,26 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
+CORS_ALLOW_ALL_ORIGINS = False 
+CORS_ALLOWED_ORIGINS = [
+    "https://shahenati.ly",   
+    "https://www.shahenati.ly",
+    
+]
+
+
 
 CORS_ALLOW_CREDENTIALS = True
+SESSION_COOKIE_SECURE = True 
+
+CSRF_COOKIE_SECURE = True 
+CSRF_COOKIE_SAMESITE = 'Lax'  
+CSRF_TRUSTED_ORIGINS = [
+    "https://shahenati.ly",
+    "https://www.shahenati.ly",
+
+]
+
 
 
 

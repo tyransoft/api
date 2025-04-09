@@ -74,6 +74,8 @@ def register_driver(request):
              get_token(request),
              httponly=True,
              samesite='lax',
+             max_age=60 * 60 * 24 * 7,  
+             secure=True
          )
          return response
    else:
@@ -137,6 +139,8 @@ def register_customer(request):
              get_token(request),
              httponly=True,
              samesite='lax',
+             max_age=60 * 60 * 24 * 7,  
+             secure=True
          )
          return response
    else:
@@ -170,6 +174,8 @@ def login_user(request):
              get_token(request),
              httponly=True,
              samesite='lax',
+             max_age=60 * 60 * 24 * 7,  
+             secure=True
          )
       return response
    return Response({'error': 'اسم المستخدم وكلمة المرور غير صحيحين. حاول مرة أخرى أو يمكنك إنشاء حساب جديد.'}, status=401)

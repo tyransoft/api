@@ -6,12 +6,17 @@ from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model
 from django.contrib.auth.hashers import check_password
 from decimal import Decimal
+from django.middleware.csrf import get_token
 
 
 
 
 @api_view(['POST'])
 def register_driver(request):
+  if request.user.is_authenticated:
+      return Response({'error': 'انت مسجل بالفعل'}, status=500) 
+
+  else: 
    username=request.data.get('username')
    email=request.data.get('email')
    password=request.data.get('password')    
@@ -21,6 +26,8 @@ def register_driver(request):
       return Response({'error': 'جميع الحقول مطلوبة: اسم المستخدم، الاسم , كلمة المرور، وباقي البيانات مطلوبة .'}, status=400)
    if User.objects.filter(username=username).exists():
       return Response({'error': 'اسم المستخدم هذا مستعمل مسبقا.استعمل اسم مستخدم اخر او يمكنك تسجيل الدخول.'},status=400)
+   if User.objects.filter(email=email).exists():
+      return Response({'error': 'البريد الالكتروني هذا موجود بالفعل! حاول تسجيل الدخول'},status=400)
 
    try:
       user = User.objects.create_user(username=username, password=password, email=email)
@@ -56,12 +63,28 @@ def register_driver(request):
 
    if user is not None:
          login(request, user)
-         return Response({'message': 'مرحبا بك. تم تسجيلك بنجاح'}, status=200)
+         response= Response({
+               'message': 'مرحبا بك. تم تسجيلك بنجاح',
+               'csrftoken':get_token(request),
+              
+            },status=200)
+         
+         response.set_cookie(
+             'csrftoken',
+             get_token(request),
+             httponly=True,
+             samesite='lax',
+         )
+         return response
    else:
          return Response({'error': 'فشلت عملية التسجيل، حاول مرة أخرى.'}, status=500)
 
 @api_view(['POST'])
 def register_customer(request):
+  if request.user.is_authenticated:
+      return Response({'error': 'انت مسجل بالفعل'}, status=500) 
+
+  else:
    username=request.data.get('username')
    email=request.data.get('email')
    password=request.data.get('password')    
@@ -71,6 +94,8 @@ def register_customer(request):
       return Response({'error': 'جميع الحقول مطلوبة: اسم المستخدم، الاسم , كلمة المرور، وباقي البيانات مطلوبة .'}, status=400)
    if User.objects.filter(username=username).exists():
       return Response({'error': 'اسم المستخدم هذا مستعمل مسبقا.استعمل اسم مستخدم اخر او يمكنك تسجيل الدخول.'},status=400)
+   if User.objects.filter(email=email).exists():
+      return Response({'error': 'البريد الالكتروني هذا موجود بالفعل! حاول تسجيل الدخول'},status=400)
 
    try:
       user = User.objects.create_user(username=username, password=password, email=email)
@@ -101,13 +126,29 @@ def register_customer(request):
   
    if user is not None:
          login(request, user)
-         return Response({'message': 'مرحبا بك. تم تسجيلك بنجاح'}, status=200)
+         response= Response({
+               'message': 'مرحبا بك. تم تسجيلك بنجاح',
+               'csrftoken':get_token(request),
+              
+            },status=200)
+         
+         response.set_cookie(
+             'csrftoken',
+             get_token(request),
+             httponly=True,
+             samesite='lax',
+         )
+         return response
    else:
          return Response({'error': 'فشلت عملية التسجيل، حاول مرة أخرى.'}, status=500)
 
 
 @api_view(['POST'])
 def login_user(request):
+  if request.user.is_authenticated:
+      return Response({'error': 'انت مسجل بالفعل'}, status=500) 
+
+  else:
    username = request.data.get('username')
    password = request.data.get('password')
 
@@ -118,8 +159,19 @@ def login_user(request):
 
    if user is not None:
       login(request, user)
-      return Response({'message': 'تم تسجيل الدخول بنجاح'}, status=200)
-
+      response= Response({
+               'message': 'مرحبا بك. تم تسجيلك بنجاح',
+               'csrftoken':get_token(request),
+              
+            },status=200)
+         
+      response.set_cookie(
+             'csrftoken',
+             get_token(request),
+             httponly=True,
+             samesite='lax',
+         )
+      return response
    return Response({'error': 'اسم المستخدم وكلمة المرور غير صحيحين. حاول مرة أخرى أو يمكنك إنشاء حساب جديد.'}, status=401)
 
 

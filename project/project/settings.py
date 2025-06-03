@@ -1,6 +1,7 @@
 from pathlib import Path
 import os
-
+import pymysql
+pymysql.install_as_MySQLdb()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -80,7 +81,10 @@ DATABASES = {
         'USER': 'shahenat_loremdb',  
         'PASSWORD': 'OXhB!P;he8',  
         'HOST': '102.213.180.2',  
-        'PORT': ''
+        'PORT': '',
+        'OPTIONS': {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+        }
     }
 } 
 # Password validation

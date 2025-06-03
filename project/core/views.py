@@ -4,11 +4,163 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from decimal import Decimal ,InvalidOperation
 from django.db.models import Avg,Count
-from django.db import transaction
+from  django.utils.timezone import now
 
 @api_view(['GET'])
 def home(request):
-   return Response({'message':'اهلا بك في شاحنتي.......!',})
+ """it shows home page data"""
+ try:
+    try:
+      if request.user.is_authenticated:
+ 
+        customer = Customers.objects.get(user=request.user)
+               
+        rides = Transaction.objects.filter(customer=customer,status='A')
+        onrode=Transaction.objects.filter(customer=customer,status='B')
+        if rides.exists():
+            proposals = Proposal.objects.filter(transaction__in=rides)  
+
+            serializer = ProposalSerializers(proposals, many=True)
+
+                
+            return Response({
+                    'onrode':RidesSerializers(onrode).data if onrode else None,
+                    'proposals': serializer.data if proposals else None,
+                })
+      else:
+        customer = None
+           
+    except Customers.DoesNotExist:
+        customer = None
+
+    try:
+      if request.user.is_authenticated:
+
+        driver = Drivers.objects.get(user=request.user)
+            
+        open_rides = Transaction.objects.filter(car_type=driver.car_type, status='A')
+        onrode = Transaction.objects.filter(driver=driver, status='B')
+        sub=Subscription.objects.get(driver=driver)
+        plans=Plan.objects.all()
+        return Response({
+                    'openrides':RidesSerializers(open_rides, many=True).data if open_rides else None,
+                    'onrode': RidesSerializers(onrode).data if onrode else None,
+                    'plans':  PlansSerializers(plans,many=True).data if not sub else None,
+                    'renew':'عليك تجديد الاشتراك الخاص بك' if sub.is_active == False else None,
+        })
+      else:
+        driver = None
+   
+    except Drivers.DoesNotExist:
+                driver = None
+
+    if  customer==None and  driver ==None:
+        plans=Plan.objects.all()
+
+        return Response({'plans':  PlansSerializers(plans,many=True).data })
+
+
+ except Exception as e:
+        return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
+
+
+@api_view(['POST'])
+def generate_cards(request):
+   """allows admin to generate payment cards"""
+   try:
+      if request.user.is_authenticated:
+         data=request.data
+         value=data.get('value')
+         number_of_cards=data.get('number_of_cards')
+         if not number_of_cards or not value:
+           return Response({'error':'عدد الكروت والقيمة بيانات مطلوبة'},status=400)
+         cards=Cards.generate_cards(number_of_cards,value)
+         
+         return Response({'message':'تم انشاء الكروت بنجاح'},status=200)
+
+   except Exception as a:
+      return Response({'error':str(a)})
+  
+@api_view(['POST','GET'])
+def card_list_view(request):
+    value_filter = None
+    is_used_filter = None
+
+    if request.method == "GET":
+        value_filter = request.query_params.get('value')
+        is_used_filter = request.query_params.get('is_used')
+    elif request.method == "POST":
+        value_filter = request.data.get('value')
+        is_used_filter = request.data.get('is_used')
+
+    if value_filter and not is_used_filter:
+        cards = Cards.objects.filter(value=value_filter)  
+        shows=CardsSerializers(cards,many=True)       
+    
+    elif is_used_filter and not value_filter:
+        is_used_filter = is_used_filter.lower() == 'true'  
+        cards = Cards.objects.filter(is_used=is_used_filter)  
+        shows=CardsSerializers(cards,many=True)       
+
+    elif value_filter and is_used_filter:
+        is_used_filter = is_used_filter.lower() == 'true'  
+        cards = Cards.objects.filter(is_used=is_used_filter,value=value_filter) 
+        shows=CardsSerializers(cards,many=True)       
+
+    else:
+        cards=Cards.objects.all()
+        shows=CardsSerializers(cards,many=True)       
+    return Response(shows.data)
+
+@api_view(['POST'])
+def add_plan(request):
+     try:
+        name=request.data.get('name')
+        duration=request.data.get('duration')
+        price=request.data.get('price')
+        description=request.data.get('description')
+        if name and duration and description and price:
+           plan=Plan.objects.create(
+              name=name,
+              price=price,
+              description=description,
+              duration=duration,
+
+           )
+           plan.save()
+           return Response({'message':'تمت اضافة الباقة بنجاح !'})
+        else:
+           return Response({'error':'جميع البيانات مطلوبة !'})
+           
+     except Exception as e:
+        return Response({'error':str(e)})  
+@api_view(['GET','POST'])     
+def update_plan(request, plan_id):
+    try:
+      plan=Plan.objects.get(id=plan_id)
+      if plan:
+            old_plan_data = PlansSerializers(plan).data
+                
+            plan.name = request.data.get('name', plan.name)
+            plan.price = request.data.get('price', plan.price)
+            plan.duration = request.data.get('duration', plan.duration)
+            plan.description = request.data.get('description', plan.description)
+ 
+            plan.save()
+
+            updated_plan_data =  PlansSerializers(plan).data
+            return Response({
+                'old_data': old_plan_data,
+                'updated_data': updated_plan_data,
+                })
+    except Exception as e:
+        return Response({'error':str(e)})  
+@api_view(['GET'])    
+def plans(request):
+   plans=Plan.objects.all()
+   plan_list=PlansSerializers(plans,many=True)
+   return Response(plan_list.data)
+
 
 
 
@@ -140,34 +292,43 @@ def show_rides(request):
 
 @api_view(['POST'])
 def make_proposal(request):
-   """allow drivers to send proposals to customers who want a ride"""
-   try:
-    if  request.user.is_authenticated:
+  """allow drivers to send proposals to customers who want a ride"""
+  try:
+   if  request.user.is_authenticated:
 
      data=request.data
      id=data.get('ride_id')
      comment=data.get('comment')
      price=data.get('price')
      driver = Drivers.objects.get(user=request.user)
-
+     sub=Subscription.objects.get(deriver=driver)
      if driver:
-      ride=Transaction.objects.get(id=id)
-      proposal=Proposal.objects.create(
-       driver=driver,
-       transaction=ride,
-       price=price,
-       comment=comment,
-       customer=ride.customer,
-      ) 
-      proposal.save()
-      return Response({'message':'تم ارسال الطلب بنجاح'}, status=200)
+      if sub.end_date <= timezone.now().date():
+        sub.is_active = False
+        sub.save()
+        sub.driver.status = "available"
+        sub.driver.save()
+        if sub.is_active:
+        
+         ride=Transaction.objects.get(id=id)
+         proposal=Proposal.objects.create(
+           driver=driver,
+           transaction=ride,
+           price=price,
+           comment=comment,
+           customer=ride.customer,
+         ) 
+         proposal.save()
+         return Response({'message':'تم ارسال الطلب بنجاح'}, status=200)
+      return Response({'error':'ليس لديك اشتراك فعال !!! '}, status=400)
+
      return Response({'error':'لم يتم التعرف عليك كسائق حاول تسجيل الدخول'}, status=400)
 
 
-    else:
+   else:
       return Response({'error':'لم يتم التعرف عليك كسائق حاول تسجيل الدخول'}, status=400)
               
-   except Exception as e:
+  except Exception as e:
       return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
 
 
@@ -237,7 +398,8 @@ def confirm_ride(request):
                 Transaction.objects.filter(id=ride.id).update(
                     driver=driver,
                     price=proposal_price,
-                    status='B'
+                    status='B',
+                    started_at=now(),
                 )
 
                 Drivers.objects.filter(id=driver.id).update(
@@ -326,7 +488,7 @@ def drivers_canceling(request):
       driver=Drivers.objects.get(user=request.user)
       if driver:
         ride=Transaction.objects.get(id=ride_id)
-        Transaction.objects.filter(id=ride_id).update(status='D')
+        Transaction.objects.filter(id=ride_id).update(status='D',ended_at=now(),time = ( now() - ride.started_at).total_seconds() / 60)
         Drivers.objects.filter(id=ride.driver.id).update(status='available')
         Customers.objects.filter(id=ride.customer.id).update(status='available')
   
@@ -350,7 +512,7 @@ def customers_canceling(request):
             ride = Transaction.objects.get(id=ride_id)
 
             if customer:
-                Transaction.objects.filter(id=ride_id).update(status='C')
+                Transaction.objects.filter(id=ride_id).update(status='C',ended_at=now(),time = ( now() - ride.started_at).total_seconds() / 60)
                 
                 Drivers.objects.filter(id=ride.driver.id).update(status='available')
                 
@@ -412,7 +574,8 @@ def deliver_confirmation(request):
       if customer:
         ride=Transaction.objects.get(id=ride_id)
         if ride.status =='E':
-         Transaction.objects.filter(id=ride_id).update(status='E')
+
+         Transaction.objects.filter(id=ride_id).update(status='E',ended_at=now(),time = ( now() - ride.started_at).total_seconds() / 60)
          Drivers.objects.filter(id=ride.driver.id).update(status='available')
          Customers.objects.filter(id=ride.customer.id).update(status='available')
   
@@ -457,12 +620,15 @@ def profile(request):
                     ratings_average=Avg('driver_rating__review')
                 ).get(user=request.user)
                 rides = Transaction.objects.filter(driver=driver).count()
+                sub_info=Subscription.objects.get(driver=driver)
                 return Response({
                     'user': DriversSerializers(driver).data,
                     'ratings': DriversReviewSerializers(ratings, many=True).data,
                     'ratings_count': driver.ratings_count,
                     'ratings_average': round(driver.ratings_average, 2) if driver.ratings_average else 0,
                     'transaction_count': rides,
+                    'sub_info':SubSerializers(sub_info).data if sub_info else None,
+                    'remaining_days':sub_info.remaining_days() if sub_info else None,
                 })
             except Drivers.DoesNotExist:
                 driver = None
@@ -477,7 +643,6 @@ def profile(request):
         return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
 
 
-from django.db import transaction
 
 @api_view(['PUT'])
 def update_profile(request):
@@ -500,10 +665,11 @@ def update_profile(request):
             if customer:
                 old_customer_data = CustomerSerializers(customer).data
                 
-                customer.name = request.data.get('name', customer.name)
+                customer.gender = request.data.get('gender', customer.gender)
                 customer.phone = request.data.get('phone', customer.phone)
                 customer.image = request.data.get('image', customer.image)
-                
+                customer.born_date = request.data.get('born_date', customer.born_date)
+ 
                 customer.save()
 
                 updated_customer_data = CustomerSerializers(customer).data
@@ -515,9 +681,12 @@ def update_profile(request):
             elif driver:
                 old_driver_data = DriversSerializers(driver).data
                 
-                driver.name = request.data.get('name', driver.name)
                 driver.phone = request.data.get('phone', driver.phone)
-                driver.image = request.data.get('image', driver.image)
+                driver.car_image = request.data.get('car_image', driver.car_image)
+                driver.profile_image = request.data.get('profile_image', driver.profile_image)
+                driver.profile_image = request.data.get('proof_image', driver.profile_image)
+
+
                 driver.license_image = request.data.get('license_image', driver.license_image)
                 driver.car_type = request.data.get('car_type', driver.car_type)
                 driver.car_id = request.data.get('car_id', driver.car_id)
@@ -544,3 +713,101 @@ def update_profile(request):
 
     except Exception as e:
         return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=400)
+
+
+
+
+@api_view(['POST'])
+def wallet_charging(request):
+    """it allows drivers to charg their wallets"""
+    if request.user.is_authenticated:
+ 
+      driver=Drivers.objects.get(user=request.user)
+      if driver:
+        card_code = request.data.get('code')
+        card=Cards.objects.get(code=card_code)
+        if card:
+            if card.is_used == False:
+                driver.pocket= driver.pocket + card.value
+                driver.save()
+                card.is_used=True
+                card.save()
+                return Response(f'تم  شحن محفظتك بقيمة {card.value}',status=200)
+            
+            return Response({'error':'رقم بطاقة التعبئة هذه مستعمل مسبقا  يرجى التاكد من صحته والمحاولة مجددا'},status=400)
+        return Response({'error':'الرقم السري غير صحيح'},status=400)
+      return Response({'error':'لم نتعرف عليك كسائق حاول مجددا'},status=400)
+
+    return Response({'error':'لم نتعرف عليك كسائق حاول مجددا'},status=400)
+
+
+
+
+
+
+
+@api_view(['POST'])
+def buy_plan(request, plan_id):
+        """it allows drivers to buy a plan"""
+        if request.user.is_authenticated:
+            driver = Drivers.objects.get(user=request.user)
+            plan = Plan.objects.get(id=plan_id)
+
+            if Subscription.objects.filter(driver=driver).exists():
+                return Response({'error':'لديك اشتراك فعال بالفعل'},status=400)
+                
+
+         
+
+            if driver.pocket >= plan.price:
+                subscription = Subscription.objects.create(
+                    driver=driver,
+                    plan=plan,
+                    final_price=plan.price
+                )
+                
+               
+                subscription.save()
+                driver.pocket -= plan.price
+                driver.status = 'available'
+                driver.save()
+
+                return Response({'message':'تم شراء الاشتراك بنجاح!'},status=200)
+            else:
+                return Response({'error':'رصيدك غير كافٍ لإتمام عملية الشراء'},status=400)
+        else:
+            return Response({'error':'عليك تسجيل الدخول او انشاء حساب لاتمام هذه العملية'})
+
+   
+@api_view(['POST'])    
+def renew_subscription(request, subscription_id):
+  """it allows drivers to renew their subscriptions"""
+  if request.user.is_authenticated:
+ 
+    subscription = Subscription.objects.get(id=subscription_id)
+    driver =subscription.driver
+
+    if subscription.is_active == False:
+        if driver.pocket >= subscription.final_price:
+
+    
+
+          start = timezone.now().date()
+
+          subscription.start_date=start
+          subscription.is_active=True
+          subscription.save()
+
+          driver.status = 'available'
+          driver.pocket -=  subscription.final_price
+          
+          driver.save()
+
+          return Response( {'message':'تم تجديد اشتراكك بنجاح  !'},status=200)
+
+        
+        return Response({'error':' القيمة التي في محفظتك غير كافية لتجديد الاشتراك , يرجى شحن المحفظة بالقيمة المناسبة'},status=400)
+    else:
+     return Response({'error':'الاشتراك الخاص بك لايزال فعالا'},status=400)
+  else:
+            return Response({'error':'عليك تسجيل الدخول او انشاء حساب لاتمام هذه العملية'},status=400)

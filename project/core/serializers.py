@@ -38,3 +38,20 @@ class ProposalSerializers(serializers.ModelSerializer):
     class Meta:
         model = Proposal
         fields = '__all__'
+
+
+class PlansSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Plan
+        fields = '__all__'
+
+
+class CardsSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Cards
+        fields = '__all__'
+
+class SubSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = '__all__'

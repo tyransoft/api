@@ -127,7 +127,9 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
 
-
+CSRF_TRUSTED_ORIGINS = [
+    'https://shahenati.ly', 
+]
 
 CORS_ALLOW_CREDENTIALS = True
 SESSION_COOKIE_SECURE = True 

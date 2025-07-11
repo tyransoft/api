@@ -13,10 +13,7 @@ from django.middleware.csrf import get_token
 
 @api_view(['POST'])
 def register_driver(request):
-  if request.user.is_authenticated:
-      return Response({'error': 'انت مسجل بالفعل'}, status=500) 
 
-  else:
    name=request.data.get('name')
    email=request.data.get('email')
    password=request.data.get('password')    
@@ -76,10 +73,6 @@ def register_driver(request):
    
 @api_view(['POST'])
 def register_customer(request):
-  if request.user.is_authenticated:
-      return Response({'error': 'انت مسجل بالفعل'}, status=500) 
-
-  else:
    name=request.data.get('name')
    email=request.data.get('email')
    password=request.data.get('password')    

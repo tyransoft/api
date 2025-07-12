@@ -141,8 +141,11 @@ def login_user(request):
    if not email or not password:
       return Response({'error': 'اسم المستخدم وكلمة المرور مطلوبين.'}, status=400)
 
-   user = authenticate(username=email,email=email, password=password)
-
+   try:
+      user = User.objects.get(username=email ,email=email)
+   except Exception as e:
+      return Response({'error': f'حدث خطأ أثناء إنشاء الحساب: {str(e)}'}, status=400)
+       
    if user is not None:
       token, created=Token.objects.get_or_create(user=user)
       return Response({

@@ -57,7 +57,6 @@ def register_driver(request):
    except Exception as e:
         return Response({'error': f'حدث خطأ أثناء حفظ بيانات السائق: {str(e)}'}, status=400)
     
-   user = authenticate(username=email,email=email, password=password)
   
    if user is not None:
          token, created=Token.objects.get_or_create(user=user)
@@ -114,7 +113,6 @@ def register_customer(request):
 
    
   
-   user = authenticate(username=email,email=email, password=password)
 
    if user is not None:
          token, created=Token.objects.get_or_create(user=user)

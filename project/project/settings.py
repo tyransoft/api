@@ -14,7 +14,7 @@ with open(os.path.join(BASE_DIR,'SECRET_KEY.txt')) as f:
     SECRET_KEY=f.read().strip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['shahenati.ly','www.shahenati.ly']
 
@@ -145,10 +145,13 @@ CORS_ALLOWED_ORIGINS = [
 
 
 
-SESSION_COOKIE_SECURE = True  
-CSRF_COOKIE_SECURE = True
 
 
+
+SECURE_SSL_REDIRECT = True 
+SESSION_COOKIE_SECURE = True 
+CSRF_COOKIE_SECURE = True  
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')  
 
 MEDIA_URL = '/media/'
 

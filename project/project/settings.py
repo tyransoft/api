@@ -136,7 +136,10 @@ REST_FRAMEWORK = {
     ]
 }
 
-
+CORS_ALLOWED_ORIGINS = [
+    "https://shahenati.ly",
+  
+]
 
 CSRF_TRUSTED_ORIGINS = []  
 CORS_ALLOW_CREDENTIALS = False  

@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
+
     'core',
 ]
 
@@ -125,17 +127,22 @@ STATIC_URL = 'static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}
 
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://shahenati.ly', 
-]
 
-CORS_ALLOW_CREDENTIALS = True
-SESSION_COOKIE_SECURE = True 
-
-CSRF_COOKIE_SECURE = True 
-CSRF_COOKIE_SAMESITE = 'Lax'  
+CSRF_TRUSTED_ORIGINS = []  
+CORS_ALLOW_CREDENTIALS = False  
+SESSION_COOKIE_SECURE = False  
+CSRF_COOKIE_SECURE = False  
+CSRF_COOKIE_SAMESITE = None 
 
 
 

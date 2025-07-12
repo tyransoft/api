@@ -60,7 +60,7 @@ def register_driver(request):
    user = authenticate(username=email,email=email, password=password)
   
    if user is not None:
-         token=Token.objects.get_or_create(user=user)
+         token, created=Token.objects.get_or_create(user=user)
          return Response({
                'message': 'مرحبا بك. تم تسجيلك بنجاح',
                'token':token.key,
@@ -117,7 +117,7 @@ def register_customer(request):
    user = authenticate(username=email,email=email, password=password)
 
    if user is not None:
-         token=Token.objects.get_or_create(user=user)
+         token, created=Token.objects.get_or_create(user=user)
          return Response({
                'message': 'مرحبا بك. تم تسجيلك بنجاح',
                'token':token.key,
@@ -146,7 +146,7 @@ def login_user(request):
    user = authenticate(username=email,email=email, password=password)
 
    if user is not None:
-      token=Token.objects.get_or_create(user=user)
+      token, created=Token.objects.get_or_create(user=user)
       return Response({
                'message': 'مرحبا بك. تم تسجيلك بنجاح',
                'token':token.key,

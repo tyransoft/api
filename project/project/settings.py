@@ -14,7 +14,7 @@ with open(os.path.join(BASE_DIR,'SECRET_KEY.txt')) as f:
     SECRET_KEY=f.read().strip()
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['shahenati.ly','www.shahenati.ly']
 
@@ -83,7 +83,7 @@ DATABASES = {
         'USER': 'shahenat_loremdb',  
         'PASSWORD': 'OXhB!P;he8',  
         'HOST': '102.213.180.2',  
-        'PORT': '',
+        'PORT': '5432',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         }

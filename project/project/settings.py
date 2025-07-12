@@ -83,7 +83,7 @@ DATABASES = {
         'USER': 'shahenat_loremdb',  
         'PASSWORD': 'OXhB!P;he8',  
         'HOST': '102.213.180.2',  
-        'PORT': '5432',
+        'PORT': '3306',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         }
@@ -138,14 +138,12 @@ REST_FRAMEWORK = {
 
 CORS_ALLOWED_ORIGINS = [
     "https://shahenati.ly",
+    "http://shahenati.ly",
+    "http://localhost",
   
 ]
 
-CSRF_TRUSTED_ORIGINS = []  
-CORS_ALLOW_CREDENTIALS = False  
-SESSION_COOKIE_SECURE = False  
-CSRF_COOKIE_SECURE = False  
-CSRF_COOKIE_SAMESITE = None 
+
 
 
 

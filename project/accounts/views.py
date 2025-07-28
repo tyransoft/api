@@ -8,9 +8,10 @@ from decimal import Decimal
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny, IsAuthenticated
 
+from django.views.decorators.csrf import csrf_exempt
 
 
-
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_driver(request):
@@ -72,7 +73,7 @@ def register_driver(request):
    else:
          return Response({'error': 'فشلت عملية التسجيل، حاول مرة أخرى.'}, status=400)
 
-   
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_customer(request):
@@ -127,7 +128,7 @@ def register_customer(request):
           
    else:
          return Response({'error': 'فشلت عملية التسجيل، حاول مرة أخرى.'}, status=400)
- 
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_user(request):
@@ -156,7 +157,7 @@ def login_user(request):
          
  
    return Response({'error': 'اسم المستخدم وكلمة المرور غير صحيحين. حاول مرة أخرى أو يمكنك إنشاء حساب جديد.'}, status=401)
-
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def logout_user(request):
@@ -168,7 +169,7 @@ def logout_user(request):
 
 
 
-
+@csrf_exempt
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def change_password(request):    

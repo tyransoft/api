@@ -5,7 +5,10 @@ from rest_framework.decorators import api_view
 from decimal import Decimal ,InvalidOperation
 from django.db.models import Avg,Count
 from  django.utils.timezone import now
+from django.views.decorators.csrf import csrf_exempt
 
+
+@csrf_exempt
 @api_view(['GET'])
 def home(request):
  """it shows home page data"""
@@ -63,7 +66,7 @@ def home(request):
  except Exception as e:
         return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
 
-
+@csrf_exempt
 @api_view(['POST'])
 def generate_cards(request):
    """allows admin to generate payment cards"""
@@ -80,7 +83,7 @@ def generate_cards(request):
 
    except Exception as a:
       return Response({'error':str(a)})
-  
+@csrf_exempt  
 @api_view(['POST','GET'])
 def card_list_view(request):
     value_filter = None
@@ -111,7 +114,7 @@ def card_list_view(request):
         cards=Cards.objects.all()
         shows=CardsSerializers(cards,many=True)       
     return Response(shows.data)
-
+@csrf_exempt
 @api_view(['POST'])
 def add_plan(request):
      try:
@@ -134,6 +137,8 @@ def add_plan(request):
            
      except Exception as e:
         return Response({'error':str(e)})  
+
+@csrf_exempt        
 @api_view(['GET','POST'])     
 def update_plan(request, plan_id):
     try:
@@ -155,6 +160,8 @@ def update_plan(request, plan_id):
                 })
     except Exception as e:
         return Response({'error':str(e)})  
+
+@csrf_exempt         
 @api_view(['GET'])    
 def plans(request):
    plans=Plan.objects.all()
@@ -163,7 +170,7 @@ def plans(request):
 
 
 
-
+@csrf_exempt
 @api_view(['POST'])
 def update_user_location(request):
    """update users locations constantly"""
@@ -213,7 +220,7 @@ def update_user_location(request):
       return Response({'error':str(a)})
 
 
-
+@csrf_exempt
 @api_view(['POST'])
 def request_ride(request):
    """allow customer to post a ride request"""
@@ -262,7 +269,7 @@ def request_ride(request):
 
    except Exception as a:
       return Response({'error': str(a)})
-
+@csrf_exempt
 @api_view(['GET'])
 def show_rides(request):
    """show rides that suitable for the driver"""
@@ -289,7 +296,7 @@ def show_rides(request):
       return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
 
 
-
+@csrf_exempt
 @api_view(['POST'])
 def make_proposal(request):
   """allow drivers to send proposals to customers who want a ride"""
@@ -332,7 +339,7 @@ def make_proposal(request):
       return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
 
 
-
+@csrf_exempt
 @api_view(['GET'])
 def show_proposal(request):
    """show proposals to customer """
@@ -360,7 +367,7 @@ def show_proposal(request):
         return Response({'error': f'حدث خطأ أثناء حفظ البيانات: {str(e)}'}, status=500)
 
 
-
+@csrf_exempt
 @api_view(['POST'])
 def confirm_ride(request):
     try:
@@ -414,7 +421,7 @@ def confirm_ride(request):
 
     except Exception as e:
         return Response({'error': f'حدث خطأ أثناء معالجة الطلب: {str(e)}'}, status=500)
-
+@csrf_exempt
 @api_view(['POST'])
 def customer_review(request):
    """it allows customer to make reviews about drivers"""
@@ -446,7 +453,7 @@ def customer_review(request):
               
    except Exception as e:
       return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
-
+@csrf_exempt
 @api_view(['POST'])
 def driver_review(request):
    """it allows driver to make reviews about customers"""
@@ -478,7 +485,7 @@ def driver_review(request):
               
    except Exception as e:
       return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
-
+@csrf_exempt
 @api_view(['POST'])
 def drivers_canceling(request):
    """it allows driver to cancele rides"""
@@ -501,7 +508,8 @@ def drivers_canceling(request):
       return Response({'error':'لم يتم التعرف عليك كسائق حاول تسجيل الدخول'}, status=400)
               
    except Exception as e:
-      return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
+     return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
+@csrf_exempt     
 @api_view(['POST'])
 def customers_canceling(request):
     """it allows customers to cancel rides"""
@@ -531,7 +539,7 @@ def customers_canceling(request):
         return Response({'error': 'الرحلة غير موجودة'}, status=404)
     except Exception as e:
         return Response({'error': f'حدث خطأ أثناء حفظ البيانات: {str(e)}'}, status=500)
-
+@csrf_exempt
 @api_view(['GET'])
 def driver_data(request,driver_id):
    """it gives driver's info to customer """
@@ -543,7 +551,7 @@ def driver_data(request,driver_id):
    except Exception as e:
     return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
    
-
+@csrf_exempt
 @api_view(['POST'])
 def driver_deliver(request):
    """it allows driver to deliver rides"""
@@ -562,7 +570,7 @@ def driver_deliver(request):
               
    except Exception as e:
       return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
-
+@csrf_exempt
 @api_view(['POST'])
 def deliver_confirmation(request):
    """it allows customers to end rides"""
@@ -588,7 +596,7 @@ def deliver_confirmation(request):
               
    except Exception as e:
       return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
-
+@csrf_exempt
 @api_view(['GET'])
 def profile(request):
    """it shows the profile of the user"""
@@ -643,7 +651,7 @@ def profile(request):
         return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
 
 
-
+@csrf_exempt
 @api_view(['PUT'])
 def update_profile(request):
     """ update user profile and show old data before the update"""
@@ -716,7 +724,7 @@ def update_profile(request):
 
 
 
-
+@csrf_exempt
 @api_view(['POST'])
 def wallet_charging(request):
     """it allows drivers to charg their wallets"""
@@ -745,7 +753,7 @@ def wallet_charging(request):
 
 
 
-
+@csrf_exempt
 @api_view(['POST'])
 def buy_plan(request, plan_id):
         """it allows drivers to buy a plan"""
@@ -778,7 +786,7 @@ def buy_plan(request, plan_id):
         else:
             return Response({'error':'عليك تسجيل الدخول او انشاء حساب لاتمام هذه العملية'})
 
-   
+@csrf_exempt   
 @api_view(['POST'])    
 def renew_subscription(request, subscription_id):
   """it allows drivers to renew their subscriptions"""

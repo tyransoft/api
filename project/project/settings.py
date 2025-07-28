@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
+    'corsheaders',
 
     'core',
 ]
@@ -43,6 +44,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
+
 ]
 
 ROOT_URLCONF = 'project.urls'
@@ -136,14 +139,10 @@ REST_FRAMEWORK = {
     ]
 }
 
-CORS_ALLOWED_ORIGINS = [
-    "https://shahenati.ly",
-    "http://shahenati.ly",
-    "http://localhost",
-  
-]
 
 
+
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 

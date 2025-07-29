@@ -143,7 +143,7 @@ def login_user(request):
       return Response({'error': 'اسم المستخدم وكلمة المرور مطلوبين.'}, status=400)
 
    try:
-      user = User.objects.get(username=email ,email=email)
+      user = User.objects.get(username=email ,email=email,password=password)
    except Exception as e:
       return Response({'error': f'حدث خطأ أثناء إنشاء الحساب: {str(e)}'}, status=400)
        

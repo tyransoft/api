@@ -93,6 +93,7 @@ class Transaction(models.Model):
     longitude_of_drop = models.DecimalField(max_digits=9, decimal_places=6)
     car_type=models.CharField(max_length=30,db_index=True)
     status=models.CharField(max_length=50,choices=status,db_index=True)
+    kind=models.CharField(max_length=50,db_index=True)
     description=models.TextField()
     weight=models.FloatField(null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, null=True)  

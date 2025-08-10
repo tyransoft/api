@@ -241,6 +241,7 @@ def request_ride(request):
       report = data.get('description')
       weight = data.get('weight')
       car_type = data.get('car_type')
+      kind = data.get('kind')
 
       try:
          customer = Customers.objects.get(id=customer_id)
@@ -256,6 +257,7 @@ def request_ride(request):
              car_type=car_type,
              description=report,
              weight=weight,
+             kind=kind
          )
          ride.save() 
          customer.status = 'onride'

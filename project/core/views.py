@@ -310,11 +310,7 @@ def make_proposal(request):
      driver = Drivers.objects.get(user=request.user)
      sub=Subscription.objects.get(deriver=driver)
      if driver:
-      if sub.end_date <= timezone.now().date():
-        sub.is_active = False
-        sub.save()
-        sub.driver.status = "available"
-        sub.driver.save()
+      
         if sub.is_active:
         
          ride=Transaction.objects.get(id=id)
@@ -327,7 +323,8 @@ def make_proposal(request):
          ) 
          proposal.save()
          return Response({'message':'تم ارسال الطلب بنجاح'}, status=200)
-      return Response({'error':'ليس لديك اشتراك فعال !!! '}, status=400)
+        else:
+          return Response({'error':'ليس لديك اشتراك فعال !!! '}, status=400)
 
      return Response({'error':'لم يتم التعرف عليك كسائق حاول تسجيل الدخول'}, status=400)
 

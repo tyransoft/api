@@ -29,7 +29,7 @@ class Customers(models.Model):
     }
     user=models.ForeignKey(User,on_delete=models.CASCADE,db_index=True)
     phone = models.CharField(max_length=20)
-    image=models.ImageField(upload_to='customer_images/',null=True)
+    image=models.TextField(blank=True,null=True)
     gender=models.CharField(max_length=25)
     born_date=models.DateTimeField()
     status=models.CharField(max_length=30,choices=status,db_index=True)
@@ -50,10 +50,10 @@ class Drivers(models.Model):
     
     user=models.ForeignKey(User,on_delete=models.CASCADE,db_index=True)
     phone = models.CharField(max_length=20)
-    car_image=models.ImageField(upload_to='car_images/',null=True)
-    license_image=models.ImageField(upload_to='license_images/',null=True)
-    profile_image=models.ImageField(upload_to='profile_images/',null=True)
-    proof_image=models.ImageField(upload_to='proof_images/',null=True)
+    car_image=models.TextField(blank=True,null=True)
+    license_image=models.TextField(blank=True,null=True)
+    profile_image=models.TextField(blank=True,null=True)
+    proof_image=models.TextField(blank=True,null=True)
 
     gender=models.CharField(max_length=20)
 

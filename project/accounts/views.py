@@ -58,6 +58,7 @@ def register_driver(request):
    except Exception as e:
         return Response({'error': f'حدث خطأ أثناء حفظ بيانات السائق: {str(e)}'}, status=400)
     
+   user = authenticate(username=email, password=password)
   
    if user is not None:
          token, created=Token.objects.get_or_create(user=user)
@@ -112,6 +113,7 @@ def register_customer(request):
    except Exception as e:
         return Response({'error': f'حدث خطأ أثناء حفظ بيانات العميل: {str(e)}'}, status=400)
 
+   user = authenticate(username=email, password=password)
    
   
 
@@ -132,22 +134,19 @@ def register_customer(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_user(request):
-  if request.user.is_authenticated:
+   if request.method =='POST':
+    if request.user.is_authenticated:
       return Response({'error': 'انت مسجل بالفعل'}, status=400) 
 
-  else:
-   email = request.data.get('email')
-   password = request.data.get('password')
+    else:
+     email = request.data.get('email')
+     password = request.data.get('password')
 
-   if not email or not password:
+    if not email or not password:
       return Response({'error': 'اسم المستخدم وكلمة المرور مطلوبين.'}, status=400)
 
-   try:
-      user = User.objects.get(username=email ,email=email,password=password)
-   except Exception as e:
-      return Response({'error': f'حدث خطأ أثناء إنشاء الحساب: {str(e)}'}, status=400)
-       
-   if user is not None:
+    user = authenticate(username=email, password=password)
+    if user is not None:
       token, created=Token.objects.get_or_create(user=user)
       return Response({
                'message': 'مرحبا بك. تم تسجيلك بنجاح',
@@ -156,7 +155,9 @@ def login_user(request):
             },status=200)
          
  
-   return Response({'error': 'اسم المستخدم وكلمة المرور غير صحيحين. حاول مرة أخرى أو يمكنك إنشاء حساب جديد.'}, status=401)
+    return Response({'error': 'اسم المستخدم وكلمة المرور غير صحيحين. حاول مرة أخرى أو يمكنك إنشاء حساب جديد.'}, status=401)
+   return Response({'error': 'طريقة الطلب غير صالحة'}, status=401)
+
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])

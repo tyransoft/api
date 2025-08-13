@@ -25,11 +25,27 @@ class CustomersReviewSerializers(serializers.ModelSerializer):
         model = CutomersReview
         fields = '__all__'
 
+class UserSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields =['email','first_name']
+
 class CustomerSerializers(serializers.ModelSerializer):
+    user=UserSerializers()
     class Meta:
         model = Customers
         fields ='__all__'
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('user', {})
+        for attr, value in user_data.items():
+            setattr(instance.user, attr, value)
+        instance.user.save()
 
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        return instance
 
 
 

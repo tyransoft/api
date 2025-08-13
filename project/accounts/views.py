@@ -130,6 +130,7 @@ def register_customer(request):
           
    else:
          return Response({'error': 'فشلت عملية التسجيل، حاول مرة أخرى.'}, status=400)
+
 @csrf_exempt
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -147,10 +148,26 @@ def login_user(request):
 
     user = authenticate(username=email, password=password)
     if user is not None:
+      getuser=User.objects.get(username=email)
+      driver=Drivers.objects.get(user=getuser)
+      customer=Customers.objects.get(user=getuser)
+      if driver and customer:
+         kind='driver&customer'
+      elif driver and not customer:
+         kind='driver'
+      elif not driver and customer:
+         kind='customer'
+      else:
+         kind='admin'   
+
       token, created=Token.objects.get_or_create(user=user)
       return Response({
                'message': 'مرحبا بك. تم تسجيلك بنجاح',
                'token':token.key,
+               'user_id':getuser.id,
+               'driver_id':driver.id if driver else None,
+               'customer_id':customer.id if customer else None,
+               'userkind':kind,
               
             },status=200)
          

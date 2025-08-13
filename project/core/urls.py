@@ -26,11 +26,16 @@ urlpatterns = [
     path('driver-cancels-transaction/',drivers_canceling,name='drivers_canceling'),
     path('customer-cancels-transaction/',customers_canceling,name='customers_canceling'),
     path('driver-info/<int:driver_id>/',driver_data,name='driver_data'),
-    path('profile/',profile,name='profile'),
+    path('driver-profile/',driver_profile,name='driver_profile'),
+    path('customer-profile/',customer_profile,name='customer_profile'),
+
     path('driver-finishing-ride/',driver_deliver,name='driver_deliver'),
     path('customer-confirm-deliver/',deliver_confirmation,name='customer_deliver'),
-    path('update-profile/',update_profile,name='update_profile'),
+    path('update-customer-profile/',update_customer_profile,name='update_customer_profile'),
+    path('update-driver-profile/',update_driver_profile,name='update_driver_profile'),
     
+    path('tran-to-driver/',tran_to_driver,name='tran_to_driver'),
+    path('tran-to-customer/',tran_to_customer,name='tran_to_customer'),
 
     
 

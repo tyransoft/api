@@ -1,11 +1,12 @@
 from .serializers  import *
 from .models import *
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,permission_classes
 from decimal import Decimal ,InvalidOperation
 from django.db.models import Avg,Count
 from  django.utils.timezone import now
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.permissions import AllowAny, IsAuthenticated
 
 
 @csrf_exempt
@@ -172,6 +173,7 @@ def plans(request):
 
 @csrf_exempt
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def update_user_location(request):
    """update users locations constantly"""
    try:
@@ -222,6 +224,7 @@ def update_user_location(request):
 
 @csrf_exempt
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def request_ride(request):
    """allow customer to post a ride request"""
    try:
@@ -273,6 +276,7 @@ def request_ride(request):
       return Response({'error': str(a)})
 @csrf_exempt
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def show_rides(request):
    """show rides that suitable for the driver"""
    try:
@@ -300,6 +304,7 @@ def show_rides(request):
 
 @csrf_exempt
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def make_proposal(request):
   """allow drivers to send proposals to customers who want a ride"""
   try:
@@ -340,6 +345,7 @@ def make_proposal(request):
 
 @csrf_exempt
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def show_proposal(request):
    """show proposals to customer """
    try:
@@ -368,6 +374,7 @@ def show_proposal(request):
 
 @csrf_exempt
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def confirm_ride(request):
     try:
         if request.user.is_authenticated:
@@ -422,6 +429,7 @@ def confirm_ride(request):
         return Response({'error': f'حدث خطأ أثناء معالجة الطلب: {str(e)}'}, status=500)
 @csrf_exempt
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def customer_review(request):
    """it allows customer to make reviews about drivers"""
    try:
@@ -454,6 +462,7 @@ def customer_review(request):
       return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
 @csrf_exempt
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def driver_review(request):
    """it allows driver to make reviews about customers"""
    try:
@@ -486,6 +495,7 @@ def driver_review(request):
       return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
 @csrf_exempt
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def drivers_canceling(request):
    """it allows driver to cancele rides"""
    try:
@@ -510,6 +520,7 @@ def drivers_canceling(request):
      return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
 @csrf_exempt     
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def customers_canceling(request):
     """it allows customers to cancel rides"""
     try:
@@ -552,6 +563,7 @@ def driver_data(request,driver_id):
    
 @csrf_exempt
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def driver_deliver(request):
    """it allows driver to deliver rides"""
    try:
@@ -571,6 +583,7 @@ def driver_deliver(request):
       return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
 @csrf_exempt
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def deliver_confirmation(request):
    """it allows customers to end rides"""
    try:
@@ -595,29 +608,15 @@ def deliver_confirmation(request):
               
    except Exception as e:
       return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
+
+
 @csrf_exempt
 @api_view(['GET'])
-def profile(request):
+@permission_classes([IsAuthenticated])
+def driver_profile(request):
    """it shows the profile of the user"""
    try:
         if request.user.is_authenticated:
-            try:
-                customer = Customers.objects.get(user=request.user)
-                ratings = CutomersReview.objects.filter(customer=customer)
-                customer = Customers.objects.annotate(
-                    ratings_count=Count('customer_ratings'),
-                    ratings_average=Avg('customer_ratings__review')
-                ).get(user=request.user)
-                rides = Transaction.objects.filter(customer=customer).count()
-                return Response({
-                    'user': CustomerSerializers(customer).data,
-                    'ratings': CustomersReviewSerializers(ratings, many=True).data,
-                    'ratings_count': customer.ratings_count,
-                    'ratings_average': round(customer.ratings_average, 2) if customer.ratings_average else 0,
-                    'transaction_count': rides,
-                })
-            except Customers.DoesNotExist:
-                customer = None
 
             try:
                 driver = Drivers.objects.get(user=request.user)
@@ -640,7 +639,7 @@ def profile(request):
             except Drivers.DoesNotExist:
                 driver = None
 
-            if not customer and not driver:
+            if  not driver:
                 return Response({'error': 'لم يتم التعرف عليك كسائق أو عميل. حاول تسجيل الدخول'}, status=400)
 
         else:
@@ -650,24 +649,58 @@ def profile(request):
         return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
 
 
+
+@csrf_exempt
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def customer_profile(request):
+   """it shows the profile of the customer"""
+   try:
+        if request.user.is_authenticated:
+            try:
+                customer = Customers.objects.get(user=request.user)
+                ratings = CutomersReview.objects.filter(customer=customer)
+                customer = Customers.objects.annotate(
+                    ratings_count=Count('customer_ratings'),
+                    ratings_average=Avg('customer_ratings__review')
+                ).get(user=request.user)
+                rides = Transaction.objects.filter(customer=customer).count()
+                return Response({
+                    'user': CustomerSerializers(customer).data,
+                    'ratings': CustomersReviewSerializers(ratings, many=True).data,
+                    'ratings_count': customer.ratings_count,
+                    'ratings_average': round(customer.ratings_average, 2) if customer.ratings_average else 0,
+                    'transaction_count': rides,
+                })
+            except Customers.DoesNotExist:
+                customer = None
+
+          
+
+            if not customer :
+                return Response({'error': 'لم يتم التعرف عليك كسائق أو عميل. حاول تسجيل الدخول'}, status=400)
+
+        else:
+            return Response({'error': 'لم يتم التعرف عليك. حاول تسجيل الدخول'}, status=400)
+
+   except Exception as e:
+        return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=500)
+
+
+
+
 @csrf_exempt
 @api_view(['PUT'])
-def update_profile(request):
-    """ update user profile and show old data before the update"""
+@permission_classes([IsAuthenticated])
+def update_customer_profile(request):
+    """ update customer profile and show old data before the update"""
     try:
         if request.user.is_authenticated:
-            customer = None
-            driver = None
             
             try:
                 customer = Customers.objects.get(user=request.user)
             except Customers.DoesNotExist:
                 customer = None
-
-            try:
-                driver = Drivers.objects.get(user=request.user)
-            except Drivers.DoesNotExist:
-                driver = None
 
             if customer:
                 old_customer_data = CustomerSerializers(customer).data
@@ -676,7 +709,11 @@ def update_profile(request):
                 customer.phone = request.data.get('phone', customer.phone)
                 customer.image = request.data.get('image', customer.image)
                 customer.born_date = request.data.get('born_date', customer.born_date)
- 
+                user = request.user
+                user.first_name = request.data.get('first_name', user.first_name)
+                user.email = request.data.get('email', user.email)
+
+                user.save()
                 customer.save()
 
                 updated_customer_data = CustomerSerializers(customer).data
@@ -685,7 +722,34 @@ def update_profile(request):
                     'updated_data': updated_customer_data,
                 })
 
-            elif driver:
+
+            else:
+                return Response({'error': 'لم يتم التعرف عليك كسائق أو عميل. حاول تسجيل الدخول'}, status=400)
+
+        else:
+            return Response({'error': 'لم يتم التعرف عليك. حاول تسجيل الدخول'}, status=400)
+
+    except Exception as e:
+        return Response({'error': f'حدث خطأ أثناء حفظ البيانات : {str(e)}'}, status=400)
+
+
+
+
+@csrf_exempt
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_driver_profile(request):
+    """ update driver profile and show old data before the update"""
+    try:
+        if request.user.is_authenticated:
+            
+            try:
+                driver = Drivers.objects.get(user=request.user)
+            except Drivers.DoesNotExist:
+                driver = None
+
+           
+            if driver:
                 old_driver_data = DriversSerializers(driver).data
                 
                 driver.phone = request.data.get('phone', driver.phone)
@@ -701,7 +765,11 @@ def update_profile(request):
                 driver.license_id=request.data.get('license_id', driver.license_id)
                 driver.born_date=request.data.get('born_date', driver.born_date)
                 driver.national_number=request.data.get('national_number', driver.national_number)
+                user = request.user
+                user.first_name = request.data.get('first_name', user.first_name)
+                user.email = request.data.get('email', user.email)
 
+                user.save()
 
 
                 driver.save()
@@ -725,6 +793,95 @@ def update_profile(request):
 
 @csrf_exempt
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def tran_to_driver(request):
+   if request.method == 'POST':
+     if request.user.is_authenticated:
+       driver_data=request.data.get('driver')
+       latitude=driver_data.get('latitude')
+       longitude=driver_data.get('longitude')
+       userid=driver_data.get('user_id')
+       lat=Decimal(latitude)
+       long=Decimal(longitude)    
+       user=User.objects.get(id=userid)
+       
+       driver = Drivers(
+          user=user,
+          phone=driver_data.get('phone'),
+          profile_image=driver_data.get('profile_image'),
+          car_image=driver_data.get('car_image'),
+          proof_image=driver_data.get('proof_image'),
+          gender=driver_data.get('gender'),
+          license_id=driver_data.get('license_id'),
+          national_number=driver_data.get('national_number'),
+          license_image=driver_data.get('license_image'),
+          car_type=driver_data.get('car_type'),
+          car_id=driver_data.get('car_id'),
+          born_date=driver_data.get('born_date'),
+          status='available',
+          latitude=lat,
+          longitude=long,
+     
+          )
+       try:
+           driver.save()
+           return Response({
+               'message': 'مرحبا بك. تم التحويل بنجاح',
+               'driver_id':driver.id,
+              
+            },status=200)
+       except Exception as e:
+           return Response({'error': f'حدث خطأ أثناء حفظ بيانات السائق: {str(e)}'}, status=400)
+
+     else: 
+       return Response({'error':'لم نتعرف عليك  حاول مجددا'},status=400)
+ 
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def tran_to_customer(request):
+   if request.method == 'POST':
+     if request.user.is_authenticated:
+        driver_id=request.data.get('driver_id')
+        userid=request.data.get('user_id')
+        
+        getuser=User.objects.get(id=userid)
+        driver=Drivers.objects.get(id=driver_id)
+
+        customer = Customers(
+           user=getuser,
+           gender=driver.gender,
+           phone=driver.phone,
+           image=driver.profile_image,
+           born_date=driver.born_date,
+           status='available',
+           latitude=driver.latitude,
+           longitude=driver.longitude,
+            )
+
+        try:
+          customer.save()
+          return Response({
+               'message': 'مرحبا بك. تم التحويل بنجاح',
+               'customer_id':customer.id,
+              
+            },status=200)
+        except Exception as e:
+          return Response({'error': f'حدث خطأ أثناء حفظ بيانات العميل: {str(e)}'}, status=400)
+        
+
+     else: 
+       return Response({'error':'لم نتعرف عليك  حاول مجددا'},status=400)
+ 
+
+
+
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def wallet_charging(request):
     """it allows drivers to charg their wallets"""
     if request.user.is_authenticated:
@@ -754,6 +911,7 @@ def wallet_charging(request):
 
 @csrf_exempt
 @api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def buy_plan(request, plan_id):
         """it allows drivers to buy a plan"""
         if request.user.is_authenticated:
@@ -787,6 +945,7 @@ def buy_plan(request, plan_id):
 
 @csrf_exempt   
 @api_view(['POST'])    
+@permission_classes([IsAuthenticated])
 def renew_subscription(request, subscription_id):
   """it allows drivers to renew their subscriptions"""
   if request.user.is_authenticated:

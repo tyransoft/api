@@ -135,45 +135,47 @@ def register_customer(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def login_user(request):
-   if request.method =='POST':
+    if request.method != 'POST':
+        return Response({'error': 'طريقة الطلب غير صالحة'}, status=405)  # 405 Method Not Allowed
+    
     if request.user.is_authenticated:
-      return Response({'error': 'انت مسجل بالفعل'}, status=400) 
-
-    else:
-     email = request.data.get('email')
-     password = request.data.get('password')
-
+        return Response({'error': 'انت مسجل بالفعل'}, status=400)
+    
+    email = request.data.get('email')
+    password = request.data.get('password')
+    
     if not email or not password:
-      return Response({'error': 'اسم المستخدم وكلمة المرور مطلوبين.'}, status=400)
-
+        return Response({'error': 'البريد الإلكتروني وكلمة المرور مطلوبان.'}, status=400)
+    
     user = authenticate(username=email, password=password)
+    
     if user is not None:
-      getuser=User.objects.get(username=email)
-      driver=Drivers.objects.get(user=getuser)
-      customer=Customers.objects.get(user=getuser)
-      if driver and customer:
-         kind='driver&customer'
-      elif driver and not customer:
-         kind='driver'
-      elif not driver and customer:
-         kind='customer'
-      else:
-         kind='admin'   
-
-      token, created=Token.objects.get_or_create(user=user)
-      return Response({
-               'message': 'مرحبا بك. تم تسجيلك بنجاح',
-               'token':token.key,
-               'user_id':getuser.id,
-               'driver_id':driver.id if driver else None,
-               'customer_id':customer.id if customer else None,
-               'userkind':kind,
-              
-            },status=200)
-         
- 
-    return Response({'error': 'اسم المستخدم وكلمة المرور غير صحيحين. حاول مرة أخرى أو يمكنك إنشاء حساب جديد.'}, status=401)
-   return Response({'error': 'طريقة الطلب غير صالحة'}, status=401)
+        driver_exists = Drivers.objects.filter(user=user).first()
+        customer_exists = Customers.objects.filter(user=user).first()
+        
+        if driver_exists and customer_exists:
+            user_kind = 'driver&customer'
+        elif driver_exists:
+            user_kind = 'driver'
+        elif customer_exists:
+            user_kind = 'customer'
+        else:
+            user_kind = 'admin'
+        
+        token, created = Token.objects.get_or_create(user=user)
+        
+        return Response({
+            'message': 'مرحبا بك. تم تسجيل الدخول بنجاح',
+            'token': token.key,
+            'user_id': user.id,
+            'driver_id': driver_exists.id if driver_exists else None,
+            'customer_id': customer_exists.id if customer_exists else None,
+            'user_kind': user_kind,
+        }, status=200)
+    
+    return Response({
+        'error': 'البريد الإلكتروني أو كلمة المرور غير صحيحين. حاول مرة أخرى أو يمكنك إنشاء حساب جديد.'
+    }, status=401)
 
 @csrf_exempt
 @api_view(['POST'])
